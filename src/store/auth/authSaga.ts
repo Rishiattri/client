@@ -21,7 +21,7 @@ function* handleLogin(action: ReturnType<typeof loginRequest>): Generator {
 function* handleSignup(action: ReturnType<typeof signupRequest>): Generator {
   try {
     yield call(axios.post, `${API_URL}/signup`, action.payload);
-    yield put(signupSuccess());
+     yield put(signupSuccess(action.payload));
   } catch (err: any) {
     yield put(signupFailure(err.response?.data?.message || "Signup failed"));
   }
