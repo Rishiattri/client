@@ -1,6 +1,25 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-const initialState = {
+interface AuthState {
+  loading: boolean;
+  error: string | null;
+  isAuthenticated: boolean;
+  user: string | null;
+}
+
+interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+interface SignupPayload {
+  fullName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+const initialState: AuthState = {
   loading: false,
   error: null,
   isAuthenticated: false,
@@ -12,34 +31,36 @@ const authSlice = createSlice({
   initialState,
   reducers: {
 
-    loginRequest: (state) => {
+    loginRequest: (state, action: PayloadAction<LoginPayload>) => {
+      void action.payload;
       state.loading = true;
       state.error = null;
     },
 
-    loginSuccess: (state, action) => {
+    loginSuccess: (state, action: PayloadAction<string>) => {
       state.loading = false;
       state.isAuthenticated = true;
       state.user = action.payload;
     },
 
-    loginFailure: (state, action) => {
+    loginFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
       state.error = action.payload;
     },
 
-    signupRequest: (state) => {
+    signupRequest: (state, action: PayloadAction<SignupPayload>) => {
+      void action.payload;
       state.loading = true;
       state.error = null;
     },
 
-    signupSuccess: (state, action) => {
+    signupSuccess: (state, action: PayloadAction<string>) => {
       state.loading = false;
       state.isAuthenticated = true;
       state.user = action.payload;
     },
 
-    signupFailure: (state, action) => {
+    signupFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
       state.error = action.payload;
     },

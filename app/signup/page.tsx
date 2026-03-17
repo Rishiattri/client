@@ -23,7 +23,7 @@ export default function SignupPage() {
 
   useEffect(() => {
     if (isAuthenticated) router.push("/dashboard");
-  }, [isAuthenticated]);
+  }, [isAuthenticated, router]);
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
