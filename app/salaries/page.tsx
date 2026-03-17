@@ -1,23 +1,58 @@
-﻿import { OfficeShell, SurfaceCard } from "@/src/components/office/OfficeShell";
+﻿"use client";
 
-const salaryRows = [
-  { name: "Operations Lead", cycle: "March 2026", status: "Processing", amount: "$5,200" },
-  { name: "Design Manager", cycle: "March 2026", status: "Ready", amount: "$4,600" },
-  { name: "Frontend Engineer", cycle: "March 2026", status: "Ready", amount: "$4,200" }
-];
+import { useEffect, useMemo, useState } from "react";
+
+import { OfficeShell, SurfaceCard } from "@/src/components/office/OfficeShell";
+import { api, getStoredAuth } from "@/src/services/api/client";
+
+type SalarySlip = {
+  _id: string;
+  employeeId?: string;
+  employeeName: string;
+  month: string;
+  baseSalary: number;
+  bonus: number;
+  deductions: number;
+  netSalary: number;
+};
 
 export default function SalariesPage() {
+  const auth = useMemo(() => getStoredAuth(), []);
+  const isAdmin = auth?.user?.role === "admin";
+  const [salaryRows, setSalaryRows] = useState<SalarySlip[]>([]);
+
+  useEffect(() => {
+    const loadSalaryRows = async () => {
+      try {
+        const response = await api<{ items: SalarySlip[] }>(isAdmin ? "/salary" : "/salary/me");
+        setSalaryRows(Array.isArray(response.items) ? response.items : []);
+      } catch {
+        setSalaryRows([]);
+      }
+    };
+
+    void loadSalaryRows();
+  }, [isAdmin]);
+
+  const payrollStats = isAdmin
+    ? [
+        { label: "Salary slips", value: salaryRows.length },
+        { label: "Employees covered", value: new Set(salaryRows.map((row) => row.employeeName)).size },
+        { label: "Net processed", value: `$${salaryRows.reduce((sum, row) => sum + row.netSalary, 0).toLocaleString()}` }
+      ]
+    : [
+        { label: "Salary slips", value: salaryRows.length },
+        { label: "Latest month", value: salaryRows[0]?.month || "-" },
+        { label: "Latest net", value: salaryRows[0] ? `$${salaryRows[0].netSalary.toLocaleString()}` : "$0" }
+      ];
+
   return (
     <OfficeShell
       title="Salaries"
-      subtitle="A payroll-facing page designed in the same StaffHub visual system. This version gives you a polished, professional destination for salary operations while the deeper payroll logic can be added next."
+      subtitle={isAdmin ? "Admins can review all salary slips, bonus adjustments, deductions, and payroll totals across the team." : "Employees only see their own salary slips and monthly breakdowns here."}
     >
       <div className="grid gap-5 lg:grid-cols-3">
-        {[
-          { label: "Payroll cycle", value: "March 2026" },
-          { label: "Ready to process", value: "2 employees" },
-          { label: "Pending review", value: "1 employee" }
-        ].map((item) => (
+        {payrollStats.map((item) => (
           <SurfaceCard key={item.label}>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-violet-300/80">{item.label}</p>
             <div className="mt-4 text-3xl font-black tracking-tight text-white">{item.value}</div>
@@ -28,8 +63,8 @@ export default function SalariesPage() {
       <SurfaceCard>
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-violet-300/80">Payroll overview</p>
-            <h2 className="mt-2 text-2xl font-bold text-white">Salary preparation board</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-violet-300/80">Salary module</p>
+            <h2 className="mt-2 text-2xl font-bold text-white">{isAdmin ? "Payroll overview" : "My salary slips"}</h2>
           </div>
         </div>
         <div className="mt-6 overflow-hidden rounded-3xl border border-white/10">
@@ -37,21 +72,31 @@ export default function SalariesPage() {
             <table className="min-w-full divide-y divide-white/10 text-left">
               <thead className="bg-white/[0.03] text-xs uppercase tracking-[0.22em] text-slate-400">
                 <tr>
-                  <th className="px-5 py-4">Employee</th>
-                  <th className="px-5 py-4">Cycle</th>
-                  <th className="px-5 py-4">Status</th>
-                  <th className="px-5 py-4">Amount</th>
+                  {isAdmin ? <th className="px-5 py-4">Employee</th> : null}
+                  <th className="px-5 py-4">Month</th>
+                  <th className="px-5 py-4">Base Salary</th>
+                  <th className="px-5 py-4">Bonus</th>
+                  <th className="px-5 py-4">Deductions</th>
+                  <th className="px-5 py-4">Net Salary</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/8 bg-slate-950/40 text-sm text-slate-200">
-                {salaryRows.map((row) => (
-                  <tr key={row.name} className="hover:bg-white/[0.03]">
-                    <td className="px-5 py-4 font-medium text-white">{row.name}</td>
-                    <td className="px-5 py-4">{row.cycle}</td>
-                    <td className="px-5 py-4"><span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-200">{row.status}</span></td>
-                    <td className="px-5 py-4 font-semibold text-emerald-300">{row.amount}</td>
+                {salaryRows.length === 0 ? (
+                  <tr>
+                    <td colSpan={isAdmin ? 6 : 5} className="px-5 py-14 text-center text-slate-400">No salary slips available yet.</td>
                   </tr>
-                ))}
+                ) : (
+                  salaryRows.map((row) => (
+                    <tr key={row._id} className="hover:bg-white/[0.03]">
+                      {isAdmin ? <td className="px-5 py-4 font-medium text-white">{row.employeeName}</td> : null}
+                      <td className="px-5 py-4">{row.month}</td>
+                      <td className="px-5 py-4">${row.baseSalary.toLocaleString()}</td>
+                      <td className="px-5 py-4 text-emerald-300">${row.bonus.toLocaleString()}</td>
+                      <td className="px-5 py-4 text-rose-300">${row.deductions.toLocaleString()}</td>
+                      <td className="px-5 py-4 font-semibold text-violet-200">${row.netSalary.toLocaleString()}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

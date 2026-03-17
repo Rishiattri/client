@@ -1,8 +1,11 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
+
+import { logout } from "@/src/store/auth/authSlice";
+import { store } from "@/src/store";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: "dashboard" },
@@ -10,9 +13,10 @@ const navItems = [
   { label: "Add Project", href: "/dashboard/add-project", icon: "project" },
   { label: "Leaves", href: "/leaves", icon: "leave" },
   { label: "Salaries", href: "/salaries", icon: "salary" },
-  { label: "Login", href: "/login", icon: "login" },
-  { label: "Signup", href: "/signup", icon: "signup" }
+  { label: "Profile", href: "/profile", icon: "employee" }
 ];
+
+const logoutItem = { label: "Logout", href: "/login", icon: "logout" };
 
 function Icon({ type }: { type: string }) {
   const common = "h-4 w-4";
@@ -56,6 +60,14 @@ function Icon({ type }: { type: string }) {
           <circle cx="12" cy="14" r="2.5" />
         </svg>
       );
+    case "logout":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={common}>
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <path d="M16 17l5-5-5-5" />
+          <path d="M21 12H9" />
+        </svg>
+      );
     default:
       return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={common}>
@@ -93,7 +105,18 @@ export function OfficeShell({
   actions?: ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleLogout = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("staffhub_auth");
+    }
+
+    store.dispatch(logout());
+    setMobileMenuOpen(false);
+    router.push("/login");
+  };
 
   const renderNav = (mobile = false) => (
     <nav className="space-y-2">
@@ -119,6 +142,23 @@ export function OfficeShell({
         );
       })}
     </nav>
+  );
+
+  const renderLogout = (mobile = false) => (
+    <button
+      type="button"
+      onClick={handleLogout}
+      className={`group flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium ${
+        mobile
+          ? "border-rose-400/15 bg-rose-500/10 text-rose-100 hover:bg-rose-500/20"
+          : "border-rose-400/15 bg-rose-500/10 text-rose-100 hover:bg-rose-500/20"
+      }`}
+      >
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-500/10 text-rose-200">
+          <Icon type={logoutItem.icon} />
+        </span>
+        <span>{logoutItem.label}</span>
+    </button>
   );
 
   return (
@@ -152,10 +192,13 @@ export function OfficeShell({
           <p className="mb-4 px-3 text-[11px] font-semibold uppercase tracking-[0.26em] text-violet-300/80">Workspace</p>
           {renderNav(true)}
         </div>
+        <div className="border-t border-white/8 px-4 py-4">
+          {renderLogout(true)}
+        </div>
       </aside>
 
-      <div className="mx-auto flex min-h-screen w-full max-w-[1600px] gap-4 px-3 py-3 sm:px-4 sm:py-4 lg:gap-6 lg:px-6">
-        <aside className="sticky top-4 hidden h-[calc(100vh-2rem)] w-[280px] shrink-0 flex-col overflow-hidden rounded-[28px] border border-white/10 bg-slate-950/80 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur lg:flex">
+      <div className="mx-auto flex min-h-[calc(100vh-0.25rem)] w-full max-w-[1600px] items-stretch gap-4 px-3 py-3 sm:px-4 sm:py-4 lg:gap-6 lg:px-6">
+        <aside className="hidden min-h-full w-[280px] shrink-0 self-stretch flex-col overflow-hidden rounded-[28px] border border-white/10 bg-slate-950/80 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur lg:flex">
           <div className="border-b border-white/8 px-6 py-6">
             <div className="flex items-center gap-3">
               <BrandBlock />
@@ -165,6 +208,9 @@ export function OfficeShell({
           <div className="flex-1 overflow-y-auto px-4 py-5">
             <p className="mb-4 px-3 text-[11px] font-semibold uppercase tracking-[0.26em] text-violet-300/80">Workspace</p>
             {renderNav(false)}
+          </div>
+          <div className="border-t border-white/8 px-4 py-4">
+            {renderLogout(false)}
           </div>
         </aside>
 

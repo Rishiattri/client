@@ -56,7 +56,7 @@ export default function Dashboard() {
 
       const data = await res.json();
       const allProjects = Array.isArray(data?.data) ? data.data : [];
-      setProjects(allProjects.filter((project: Project) => project.status === "Completed"));
+      setProjects(allProjects);
     } catch {
       setProjects([]);
     }
@@ -96,10 +96,13 @@ export default function Dashboard() {
     }
   };
 
+  const activeProjectCount = projects.filter((project) => project.status === "Active").length;
+  const completedProjectCount = projects.filter((project) => project.status === "Completed").length;
+
   const stats = [
     { label: "Total Employees", value: totalEmployees, hint: "Live employee directory", color: "from-violet-600/30 to-fuchsia-500/20" },
-    { label: "Completed Projects", value: projects.length, hint: "Delivered workstreams", color: "from-sky-600/30 to-cyan-500/20" },
-    { label: "New Actions", value: 2, hint: "Add employee and project pages", color: "from-emerald-600/30 to-teal-500/20" }
+    { label: "Active Projects", value: activeProjectCount, hint: "Current workstreams", color: "from-sky-600/30 to-cyan-500/20" },
+    { label: "Completed Projects", value: completedProjectCount, hint: "Delivered workstreams", color: "from-emerald-600/30 to-teal-500/20" }
   ];
 
   return (
@@ -124,8 +127,8 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="space-y-6">
-        <SurfaceCard>
+      <div className="grid gap-6 2xl:grid-cols-2">
+        <SurfaceCard className="flex flex-col">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.26em] text-violet-300/80">Employee List</p>
@@ -134,8 +137,8 @@ export default function Dashboard() {
             <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300">{employees.length} records</div>
           </div>
 
-          <div className="mt-6 overflow-hidden rounded-3xl border border-white/10">
-            <div className="overflow-x-auto">
+          <div className="mt-6 flex-1 overflow-hidden rounded-3xl border border-white/10">
+            <div className="max-h-[420px] overflow-auto">
               <table className="min-w-full divide-y divide-white/10 text-left">
                 <thead className="bg-white/[0.03] text-xs uppercase tracking-[0.22em] text-slate-400">
                   <tr>
@@ -186,17 +189,17 @@ export default function Dashboard() {
           </div>
         </SurfaceCard>
 
-        <SurfaceCard>
+        <SurfaceCard className="flex flex-col">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.26em] text-violet-300/80">Completed Projects</p>
-              <h2 className="mt-2 text-2xl font-bold text-white">Delivery board</h2>
+              <p className="text-xs font-semibold uppercase tracking-[0.26em] text-violet-300/80">Projects</p>
+              <h2 className="mt-2 text-2xl font-bold text-white">Project board</h2>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300">{projects.length} shipped</div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300">{projects.length} total</div>
           </div>
 
-          <div className="mt-6 overflow-hidden rounded-3xl border border-white/10">
-            <div className="overflow-x-auto">
+          <div className="mt-6 flex-1 overflow-hidden rounded-3xl border border-white/10">
+            <div className="max-h-[420px] overflow-auto">
               <table className="min-w-full divide-y divide-white/10 text-left">
                 <thead className="bg-white/[0.03] text-xs uppercase tracking-[0.22em] text-slate-400">
                   <tr>
@@ -211,7 +214,7 @@ export default function Dashboard() {
                 <tbody className="divide-y divide-white/8 bg-slate-950/40 text-sm text-slate-200">
                   {projects.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-5 py-14 text-center text-slate-400">No completed projects available yet.</td>
+                      <td colSpan={6} className="px-5 py-14 text-center text-slate-400">No projects available yet.</td>
                     </tr>
                   ) : (
                     projects.map((project) => (
@@ -219,7 +222,7 @@ export default function Dashboard() {
                         <td className="px-5 py-4">
                           <div className="min-w-[180px]">
                             <div className="font-semibold text-white">{project.projectName}</div>
-                            <div className="mt-1 text-sm text-slate-400">Delivered project</div>
+                            <div className="mt-1 text-sm text-slate-400">Project tracking</div>
                           </div>
                         </td>
                         <td className="px-5 py-4">
@@ -232,7 +235,11 @@ export default function Dashboard() {
                           <div className="max-w-[220px] whitespace-normal text-slate-300">{project.developerName}</div>
                         </td>
                         <td className="px-5 py-4">
-                          <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200">
+                          <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${
+                            project.status === "Active"
+                              ? "border border-sky-400/20 bg-sky-500/10 text-sky-200"
+                              : "border border-emerald-400/20 bg-emerald-500/10 text-emerald-200"
+                          }`}>
                             {project.status}
                           </span>
                         </td>

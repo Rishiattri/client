@@ -1,5 +1,13 @@
+﻿export interface AuthUser {
+  id: string;
+  fullName: string;
+  email: string;
+  role: "admin" | "employee";
+}
+
 export interface AuthState {
-  user: string | null;
+  user: AuthUser | null;
+  token: string | null;
   loading: boolean;
   error: string | null;
   isAuthenticated: boolean;
@@ -15,4 +23,9 @@ export interface SignupPayload {
   email: string;
   password: string;
   confirmPassword: string;
+}
+
+export interface AuthSuccessPayload {
+  token: string;
+  user: AuthUser;
 }

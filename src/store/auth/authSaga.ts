@@ -1,4 +1,4 @@
-import { call, put, takeLatest } from "redux-saga/effects";
+﻿import { call, put, takeLatest } from "redux-saga/effects";
 import axios from "axios";
 import {
   loginRequest,
@@ -6,9 +6,9 @@ import {
   loginFailure,
   signupRequest,
   signupSuccess,
-  signupFailure,
+  signupFailure
 } from "./authSlice";
-import type { LoginPayload, SignupPayload } from "./authTypes";
+import type { AuthSuccessPayload, LoginPayload, SignupPayload } from "./authTypes";
 
 const API_URL = "http://localhost:3001/api";
 
@@ -24,12 +24,20 @@ function getErrorMessage(error: unknown) {
   return "Request failed";
 }
 
+function persistAuth(data: AuthSuccessPayload) {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("staffhub_auth", JSON.stringify(data));
+  }
+}
+
 function* handleLogin(action: { payload: LoginPayload }): Generator {
   try {
     const res = (yield call(axios.post, `${API_URL}/login`, action.payload)) as {
-      data: { email: string };
+      data: AuthSuccessPayload;
     };
-    yield put(loginSuccess(res.data.email));
+
+    persistAuth(res.data);
+    yield put(loginSuccess(res.data));
   } catch (error) {
     yield put(loginFailure(getErrorMessage(error)));
   }
@@ -37,8 +45,12 @@ function* handleLogin(action: { payload: LoginPayload }): Generator {
 
 function* handleSignup(action: { payload: SignupPayload }): Generator {
   try {
-    yield call(axios.post, `${API_URL}/signup`, action.payload);
-    yield put(signupSuccess(action.payload.email));
+    const res = (yield call(axios.post, `${API_URL}/signup`, action.payload)) as {
+      data: AuthSuccessPayload;
+    };
+
+    persistAuth(res.data);
+    yield put(signupSuccess(res.data));
   } catch (error) {
     yield put(signupFailure(getErrorMessage(error)));
   }

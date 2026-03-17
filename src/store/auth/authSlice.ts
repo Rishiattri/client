@@ -1,71 +1,65 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
-interface AuthState {
-  loading: boolean;
-  error: string | null;
-  isAuthenticated: boolean;
-  user: string | null;
-}
-
-interface LoginPayload {
-  email: string;
-  password: string;
-}
-
-interface SignupPayload {
-  fullName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
+﻿import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import type { AuthState, AuthSuccessPayload, LoginPayload, SignupPayload } from "./authTypes";
 
 const initialState: AuthState = {
   loading: false,
   error: null,
   isAuthenticated: false,
   user: null,
+  token: null
 };
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-
     loginRequest: (state, action: PayloadAction<LoginPayload>) => {
       void action.payload;
       state.loading = true;
       state.error = null;
     },
-
-    loginSuccess: (state, action: PayloadAction<string>) => {
+    loginSuccess: (state, action: PayloadAction<AuthSuccessPayload>) => {
       state.loading = false;
       state.isAuthenticated = true;
-      state.user = action.payload;
+      state.user = action.payload.user;
+      state.token = action.payload.token;
     },
-
     loginFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
       state.error = action.payload;
     },
-
     signupRequest: (state, action: PayloadAction<SignupPayload>) => {
       void action.payload;
       state.loading = true;
       state.error = null;
     },
-
-    signupSuccess: (state, action: PayloadAction<string>) => {
+    signupSuccess: (state, action: PayloadAction<AuthSuccessPayload>) => {
       state.loading = false;
       state.isAuthenticated = true;
-      state.user = action.payload;
+      state.user = action.payload.user;
+      state.token = action.payload.token;
     },
-
     signupFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
       state.error = action.payload;
     },
+    hydrateAuth: (state, action: PayloadAction<AuthSuccessPayload | null>) => {
+      if (!action.payload) {
+        return;
+      }
 
-  },
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+      state.isAuthenticated = true;
+    },
+    logout: (state) => {
+      state.user = null;
+      state.token = null;
+      state.isAuthenticated = false;
+      state.loading = false;
+      state.error = null;
+    }
+  }
 });
 
 export const {
@@ -75,6 +69,8 @@ export const {
   signupRequest,
   signupSuccess,
   signupFailure,
+  hydrateAuth,
+  logout
 } = authSlice.actions;
 
 export default authSlice.reducer;
