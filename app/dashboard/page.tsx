@@ -1,7 +1,10 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
+
+import { OfficeShell, SurfaceCard } from "@/src/components/office/OfficeShell";
 
 interface Employee {
   _id: string;
@@ -25,20 +28,22 @@ interface Project {
   techStack: string;
 }
 
-const sidebarItems = [
-  { label: "Dashboard", href: "/dashboard" },
-  { label: "Add Employee", href: "/dashboard/add-employee" },
-  { label: "Add Project", href: "/dashboard/add-project" },
-  { label: "Leaves", href: "/leaves" },
-  { label: "Salaries", href: "#" },
-  { label: "Employee Login", href: "/login" },
-  { label: "Employee Logout", href: "/login" }
-];
-
 export default function Dashboard() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [totalEmployees, setTotalEmployees] = useState(0);
+
+  const refreshEmployees = async () => {
+    try {
+      const res = await fetch("http://localhost:3001/api/employees");
+      const data = await res.json();
+      setEmployees(Array.isArray(data.items) ? data.items : []);
+      setTotalEmployees(data.totalEmployees || 0);
+    } catch {
+      setEmployees([]);
+      setTotalEmployees(0);
+    }
+  };
 
   const refreshProjects = async () => {
     try {
@@ -59,33 +64,11 @@ export default function Dashboard() {
 
   useEffect(() => {
     const loadDashboardData = async () => {
-      try {
-        const employeeRes = await fetch("http://localhost:3001/api/employees");
-        const employeeData = await employeeRes.json();
-        setEmployees(Array.isArray(employeeData.items) ? employeeData.items : []);
-        setTotalEmployees(employeeData.totalEmployees || 0);
-      } catch {
-        setEmployees([]);
-        setTotalEmployees(0);
-      }
-
-      await refreshProjects();
+      await Promise.all([refreshEmployees(), refreshProjects()]);
     };
 
     void loadDashboardData();
   }, []);
-
-  const refreshEmployees = async () => {
-    try {
-      const res = await fetch("http://localhost:3001/api/employees");
-      const data = await res.json();
-      setEmployees(Array.isArray(data.items) ? data.items : []);
-      setTotalEmployees(data.totalEmployees || 0);
-    } catch {
-      setEmployees([]);
-      setTotalEmployees(0);
-    }
-  };
 
   const deleteEmployee = async (id: string) => {
     const res = await fetch(`http://localhost:3001/api/employees/${id}`, {
@@ -113,168 +96,158 @@ export default function Dashboard() {
     }
   };
 
+  const stats = [
+    { label: "Total Employees", value: totalEmployees, hint: "Live employee directory", color: "from-violet-600/30 to-fuchsia-500/20" },
+    { label: "Completed Projects", value: projects.length, hint: "Delivered workstreams", color: "from-sky-600/30 to-cyan-500/20" },
+    { label: "New Actions", value: 2, hint: "Add employee and project pages", color: "from-emerald-600/30 to-teal-500/20" }
+  ];
+
   return (
-    <div style={{ display: "flex", color: "white", background: "#151a1f", minHeight: "100vh" }}>
-      <aside
-        style={{
-          width: 260,
-          background: "#0f172a",
-          borderRight: "1px solid #1e293b",
-          padding: 24,
-          position: "sticky",
-          top: 0,
-          height: "100vh"
-        }}
-      >
-        <span style={{ display: "block", fontSize: 22, fontWeight: 900, letterSpacing: "-0.01em", marginBottom: 24 }}>
-          Staff<span style={{ color: "#a78bfa" }}>Hub</span>
-        </span>
-        <nav style={{ display: "grid", gap: 10 }}>
-          {sidebarItems.map((item, index) => (
-            <a
-              key={item.label}
-              href={item.href}
-              style={{
-                padding: "12px 14px",
-                borderRadius: 10,
-                background: index === 0 ? "#1e293b" : "transparent",
-                color: "#e2e8f0",
-                border: "1px solid #1e293b",
-                textDecoration: "none"
-              }}
-            >
-              {item.label}
-            </a>
-          ))}
-        </nav>
-      </aside>
+    <OfficeShell
+      title="Office Dashboard"
+      subtitle="A calm, data-first control center for your team. The dashboard only shows lists and metrics, while create flows live in dedicated pages from the sidebar."
+      actions={
+        <>
+          <Link href="/dashboard/add-employee" className="rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(124,58,237,0.35)] hover:-translate-y-0.5">Add Employee</Link>
+          <Link href="/dashboard/add-project" className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-200 hover:border-violet-400/30 hover:bg-violet-500/10">Add Project</Link>
+        </>
+      }
+    >
+      <div className="grid gap-5 xl:grid-cols-3">
+        {stats.map((stat) => (
+          <SurfaceCard key={stat.label} className={`relative overflow-hidden bg-gradient-to-br ${stat.color}`}>
+            <div className="absolute right-0 top-0 h-28 w-28 rounded-full bg-white/8 blur-2xl" />
+            <p className="text-xs font-semibold uppercase tracking-[0.26em] text-slate-300/80">{stat.label}</p>
+            <div className="mt-4 text-5xl font-black tracking-tight text-white">{stat.value}</div>
+            <p className="mt-3 text-sm text-slate-300/85">{stat.hint}</p>
+          </SurfaceCard>
+        ))}
+      </div>
 
-      <main style={{ flex: 1, padding: 40 }}>
-        <h1>Dashboard</h1>
-        <p style={{ color: "#94a3b8", marginTop: 8 }}>Employee and completed project lists stay here. New records are added from the sidebar pages.</p>
-        <h2 style={{ marginTop: 20 }}>Total Employees: {totalEmployees}</h2>
-        <h2 style={{ marginTop: 8 }}>Completed Projects: {projects.length}</h2>
-
-        <hr style={{ margin: "30px 0", borderColor: "#334155" }} />
-
-        <h2>Employee List</h2>
-        {employees.length === 0 ? (
-          <div
-            style={{
-              marginTop: 16,
-              padding: 20,
-              border: "1px solid #334155",
-              borderRadius: 12,
-              color: "#94a3b8"
-            }}
-          >
-            No employees available yet.
+      <div className="space-y-6">
+        <SurfaceCard>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.26em] text-violet-300/80">Employee List</p>
+              <h2 className="mt-2 text-2xl font-bold text-white">Active team directory</h2>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300">{employees.length} records</div>
           </div>
-        ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 16 }}>
-            <thead>
-              <tr style={{ textAlign: "left", borderBottom: "1px solid #334155" }}>
-                <th style={{ padding: 12 }}>#</th>
-                <th style={{ padding: 12 }}>Profile</th>
-                <th style={{ padding: 12 }}>Name</th>
-                <th style={{ padding: 12 }}>Email</th>
-                <th style={{ padding: 12 }}>Role</th>
-                <th style={{ padding: 12 }}>Education</th>
-                <th style={{ padding: 12 }}>Experience</th>
-                <th style={{ padding: 12 }}>Joining Date</th>
-                <th style={{ padding: 12 }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {employees.map((employee, index) => (
-                <tr key={employee._id} style={{ borderBottom: "1px solid #1e293b" }}>
-                  <td style={{ padding: 12 }}>{index + 1}</td>
-                  <td style={{ padding: 12 }}>
-                    {employee.profileImage ? (
-                      <Image
-                        src={employee.profileImage}
-                        alt={employee.fullName}
-                        width={40}
-                        height={40}
-                        style={{ borderRadius: "50%", objectFit: "cover" }}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: "50%",
-                          background: "#2563eb",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontWeight: 700
-                        }}
-                      >
-                        {employee.fullName.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                  </td>
-                  <td style={{ padding: 12 }}>{employee.fullName}</td>
-                  <td style={{ padding: 12 }}>{employee.email}</td>
-                  <td style={{ padding: 12 }}>{employee.role}</td>
-                  <td style={{ padding: 12 }}>{employee.education}</td>
-                  <td style={{ padding: 12 }}>{employee.experienceLevel}</td>
-                  <td style={{ padding: 12 }}>{new Date(employee.joiningDate).toLocaleDateString()}</td>
-                  <td style={{ padding: 12 }}>
-                    <button onClick={() => deleteEmployee(employee._id)}>Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
 
-        <hr style={{ margin: "30px 0", borderColor: "#334155" }} />
-
-        {projects.length === 0 ? (
-          <div
-            style={{
-              marginTop: 16,
-              padding: 20,
-              border: "1px solid #334155",
-              borderRadius: 12,
-              color: "#94a3b8"
-            }}
-          >
-            No completed projects available.
+          <div className="mt-6 overflow-hidden rounded-3xl border border-white/10">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-white/10 text-left">
+                <thead className="bg-white/[0.03] text-xs uppercase tracking-[0.22em] text-slate-400">
+                  <tr>
+                    <th className="px-5 py-4">Employee</th>
+                    <th className="px-5 py-4">Role</th>
+                    <th className="px-5 py-4">Education</th>
+                    <th className="px-5 py-4">Experience</th>
+                    <th className="px-5 py-4">Joining Date</th>
+                    <th className="px-5 py-4 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/8 bg-slate-950/40 text-sm text-slate-200">
+                  {employees.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-5 py-14 text-center text-slate-400">No employees available yet.</td>
+                    </tr>
+                  ) : (
+                    employees.map((employee) => (
+                      <tr key={employee._id} className="hover:bg-white/[0.03]">
+                        <td className="px-5 py-4">
+                          <div className="flex min-w-[260px] items-center gap-4">
+                            {employee.profileImage ? (
+                              <Image src={employee.profileImage} alt={employee.fullName} width={48} height={48} className="h-12 w-12 rounded-2xl object-cover ring-1 ring-white/10" />
+                            ) : (
+                              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/20 font-bold text-violet-200 ring-1 ring-violet-300/15">
+                                {employee.fullName.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <div className="truncate font-semibold text-white">{employee.fullName}</div>
+                              <div className="mt-1 truncate text-sm text-slate-400">{employee.email}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="whitespace-nowrap px-5 py-4">{employee.role}</td>
+                        <td className="whitespace-nowrap px-5 py-4">{employee.education}</td>
+                        <td className="whitespace-nowrap px-5 py-4">{employee.experienceLevel}</td>
+                        <td className="whitespace-nowrap px-5 py-4">{new Date(employee.joiningDate).toLocaleDateString()}</td>
+                        <td className="px-5 py-4 text-right">
+                          <button onClick={() => deleteEmployee(employee._id)} className="rounded-xl border border-rose-400/20 bg-rose-500/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-rose-200 hover:bg-rose-500/20">Delete</button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 16 }}>
-            <thead>
-              <tr style={{ textAlign: "left", borderBottom: "1px solid #334155" }}>
-                <th style={{ padding: 12 }}>#</th>
-                <th style={{ padding: 12 }}>Project Name</th>
-                <th style={{ padding: 12 }}>Status</th>
-                <th style={{ padding: 12 }}>Role</th>
-                <th style={{ padding: 12 }}>Developer Name</th>
-                <th style={{ padding: 12 }}>Tech Stack</th>
-                <th style={{ padding: 12 }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {projects.map((project, index) => (
-                <tr key={project._id} style={{ borderBottom: "1px solid #1e293b" }}>
-                  <td style={{ padding: 12 }}>{index + 1}</td>
-                  <td style={{ padding: 12 }}>{project.projectName}</td>
-                  <td style={{ padding: 12 }}>{project.status}</td>
-                  <td style={{ padding: 12 }}>{project.role}</td>
-                  <td style={{ padding: 12 }}>{project.developerName}</td>
-                  <td style={{ padding: 12 }}>{project.techStack}</td>
-                  <td style={{ padding: 12 }}>
-                    <button onClick={() => deleteProject(project._id)}>Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </main>
-    </div>
+        </SurfaceCard>
+
+        <SurfaceCard>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.26em] text-violet-300/80">Completed Projects</p>
+              <h2 className="mt-2 text-2xl font-bold text-white">Delivery board</h2>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300">{projects.length} shipped</div>
+          </div>
+
+          <div className="mt-6 overflow-hidden rounded-3xl border border-white/10">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-white/10 text-left">
+                <thead className="bg-white/[0.03] text-xs uppercase tracking-[0.22em] text-slate-400">
+                  <tr>
+                    <th className="px-5 py-4">Project</th>
+                    <th className="px-5 py-4">Tech Stack</th>
+                    <th className="px-5 py-4">Role</th>
+                    <th className="px-5 py-4">Developer</th>
+                    <th className="px-5 py-4">Status</th>
+                    <th className="px-5 py-4 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/8 bg-slate-950/40 text-sm text-slate-200">
+                  {projects.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-5 py-14 text-center text-slate-400">No completed projects available yet.</td>
+                    </tr>
+                  ) : (
+                    projects.map((project) => (
+                      <tr key={project._id} className="hover:bg-white/[0.03]">
+                        <td className="px-5 py-4">
+                          <div className="min-w-[180px]">
+                            <div className="font-semibold text-white">{project.projectName}</div>
+                            <div className="mt-1 text-sm text-slate-400">Delivered project</div>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="max-w-[260px] whitespace-normal text-slate-300">{project.techStack}</div>
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="max-w-[220px] whitespace-normal text-slate-300">{project.role}</div>
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="max-w-[220px] whitespace-normal text-slate-300">{project.developerName}</div>
+                        </td>
+                        <td className="px-5 py-4">
+                          <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200">
+                            {project.status}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 text-right">
+                          <button onClick={() => deleteProject(project._id)} className="rounded-xl border border-rose-400/20 bg-rose-500/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-rose-200 hover:bg-rose-500/20">Delete Project</button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </SurfaceCard>
+      </div>
+    </OfficeShell>
   );
 }

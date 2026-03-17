@@ -15,12 +15,9 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [emailFocused, setEmailFocused] = useState(false);
-  const [passFocused, setPassFocused] = useState(false);
-
   useEffect(() => {
     if (isAuthenticated) router.push("/dashboard");
-  }, [isAuthenticated]);
+  }, [isAuthenticated, router]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,9 +139,22 @@ export default function LoginPage() {
           border: 1px solid rgba(255,255,255,0.09);
           font-size: 11px; color: #71717a;
         }
+        @media (max-width: 1024px) {
+          html, body, #__next { overflow: auto; }
+          .sh-auth-shell { position: static !important; min-height: 100vh !important; flex-direction: column !important; overflow: auto !important; }
+          .sh-auth-left { flex: none !important; width: 100% !important; padding: 32px 24px !important; min-height: auto !important; gap: 28px !important; }
+          .sh-auth-right { flex: none !important; width: 100% !important; min-height: auto !important; border-left: none !important; border-top: 1px solid rgba(255,255,255,0.06) !important; }
+          .sh-auth-card { max-width: 100% !important; padding: 28px 24px 40px !important; }
+          .sh-auth-stats { gap: 18px !important; flex-wrap: wrap !important; }
+        }
+        @media (max-width: 640px) {
+          .sh-auth-left { padding: 28px 20px !important; }
+          .sh-auth-right { justify-content: flex-start !important; }
+          .sh-auth-card { padding: 24px 20px 32px !important; }
+        }
       `}</style>
 
-      <div style={{
+      <div className="sh-auth-shell" style={{
         position: "fixed", inset: 0,
         display: "flex",
         background: "#09090b",
@@ -154,7 +164,7 @@ export default function LoginPage() {
       }}>
 
         {/* ══════════════ LEFT PANEL ══════════════ */}
-        <div style={{
+        <div className="sh-auth-left" style={{
           flex: "0 0 55%",
           display: "flex",
           flexDirection: "column",
@@ -226,7 +236,7 @@ export default function LoginPage() {
           </div>
 
           {/* Stats */}
-          <div style={{ display: "flex", gap: 36, position: "relative", zIndex: 1 }}>
+          <div className="sh-auth-stats" style={{ display: "flex", gap: 36, position: "relative", zIndex: 1 }}>
             {[
               { value: "12k+", label: "Active teams" },
               { value: "99.9%", label: "Uptime SLA" },
@@ -241,7 +251,7 @@ export default function LoginPage() {
         </div>
 
         {/* ══════════════ RIGHT PANEL ══════════════ */}
-        <div style={{
+        <div className="sh-auth-right" style={{
           flex: "0 0 45%",
           display: "flex",
           alignItems: "center",
@@ -266,7 +276,7 @@ export default function LoginPage() {
           }} />
 
           {/* Form card */}
-          <div style={{
+          <div className="sh-auth-card" style={{
             width: "100%",
             maxWidth: 420,
             padding: "0 48px",
@@ -320,8 +330,6 @@ export default function LoginPage() {
                     placeholder="you@company.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    onFocus={() => setEmailFocused(true)}
-                    onBlur={() => setEmailFocused(false)}
                     autoComplete="email"
                     required
                   />
@@ -352,8 +360,6 @@ export default function LoginPage() {
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    onFocus={() => setPassFocused(true)}
-                    onBlur={() => setPassFocused(false)}
                     autoComplete="current-password"
                     required
                   />
@@ -434,7 +440,7 @@ export default function LoginPage() {
             {/* Footer */}
             {/* ── Sign up link ── */}
             <p style={{ marginTop: 24, textAlign: "center", fontSize: 13, color: "#ffffff", fontWeight: 300 }}>
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <a
                 href="/signup"
                 style={{ color: "#ffffff", fontWeight: 500, transition: "color 0.15s", textDecoration: "none" }}

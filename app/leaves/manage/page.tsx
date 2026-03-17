@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { OfficeShell, SurfaceCard } from "@/src/components/office/OfficeShell";
+
 interface LeaveRequest {
   _id: string;
   employeeName: string;
@@ -11,18 +13,6 @@ interface LeaveRequest {
   days: number;
   status: "Pending" | "Approved" | "Rejected" | "Cancelled";
 }
-
-const sidebarItems = [
-  { label: "Dashboard", href: "/dashboard" },
-  { label: "Add Employee", href: "/dashboard/add-employee" },
-  { label: "Add Project", href: "/dashboard/add-project" },
-  { label: "Leaves", href: "/leaves" },
-  { label: "Apply Leave", href: "/leaves/apply" },
-  { label: "Manage Leaves", href: "/leaves/manage" },
-  { label: "Salaries", href: "#" },
-  { label: "Employee Login", href: "/login" },
-  { label: "Employee Logout", href: "/login" }
-];
 
 export default function ManageLeavesPage() {
   const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
@@ -40,14 +30,7 @@ export default function ManageLeavesPage() {
 
   useEffect(() => {
     const loadPendingLeaves = async () => {
-      try {
-        const res = await fetch("http://localhost:3001/api/leaves");
-        const data = await res.json();
-        const requests = Array.isArray(data.items) ? data.items : [];
-        setLeaves(requests.filter((leave: LeaveRequest) => leave.status === "Pending"));
-      } catch {
-        setLeaves([]);
-      }
+      await loadLeaves();
     };
 
     void loadPendingLeaves();
@@ -71,80 +54,60 @@ export default function ManageLeavesPage() {
   };
 
   return (
-    <div style={{ display: "flex", color: "white", background: "#151a1f", minHeight: "100vh" }}>
-      <aside
-        style={{
-          width: 260,
-          background: "#0f172a",
-          borderRight: "1px solid #1e293b",
-          padding: 24,
-          position: "sticky",
-          top: 0,
-          height: "100vh"
-        }}
-      >
-        <h2 style={{ margin: 0, marginBottom: 24, fontSize: 24 }}>StaffHub</h2>
-        <nav style={{ display: "grid", gap: 10 }}>
-          {sidebarItems.map((item, index) => (
-            <a
-              key={item.label}
-              href={item.href}
-              style={{
-                padding: "12px 14px",
-                borderRadius: 10,
-                background: index === 5 ? "#1e293b" : "transparent",
-                color: "#e2e8f0",
-                border: "1px solid #1e293b",
-                textDecoration: "none"
-              }}
-            >
-              {item.label}
-            </a>
-          ))}
-        </nav>
-      </aside>
-
-      <main style={{ flex: 1, padding: 40 }}>
-        <h1>Manage Leave Requests</h1>
-        <p style={{ color: "#94a3b8", marginTop: 8 }}>Review pending requests and update their status. Approved leaves will consume the employee balance.</p>
-
-        {leaves.length === 0 ? (
-          <div style={{ marginTop: 24, padding: 20, border: "1px solid #334155", borderRadius: 12, color: "#94a3b8" }}>
-            No pending leave requests right now.
+    <OfficeShell
+      title="Manage Leaves"
+      subtitle="A manager-friendly review screen for pending leave actions. The layout stays restrained and data-centered, matching the rest of StaffHub."
+    >
+      <SurfaceCard>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-violet-300/80">Pending queue</p>
+            <h2 className="mt-2 text-2xl font-bold text-white">Review leave requests</h2>
           </div>
-        ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 24 }}>
-            <thead>
-              <tr style={{ textAlign: "left", borderBottom: "1px solid #334155" }}>
-                <th style={{ padding: 12 }}>Employee</th>
-                <th style={{ padding: 12 }}>Type</th>
-                <th style={{ padding: 12 }}>Dates</th>
-                <th style={{ padding: 12 }}>Days</th>
-                <th style={{ padding: 12 }}>Status</th>
-                <th style={{ padding: 12 }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {leaves.map((leave) => (
-                <tr key={leave._id} style={{ borderBottom: "1px solid #1e293b" }}>
-                  <td style={{ padding: 12 }}>{leave.employeeName}</td>
-                  <td style={{ padding: 12 }}>{leave.leaveType}</td>
-                  <td style={{ padding: 12 }}>{new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}</td>
-                  <td style={{ padding: 12 }}>{leave.days}</td>
-                  <td style={{ padding: 12 }}>{leave.status}</td>
-                  <td style={{ padding: 12 }}>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <button onClick={() => updateLeaveStatus(leave._id, "Approved")}>Approve</button>
-                      <button onClick={() => updateLeaveStatus(leave._id, "Rejected")}>Reject</button>
-                      <button onClick={() => updateLeaveStatus(leave._id, "Cancelled")}>Cancel</button>
-                    </div>
-                  </td>
+          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300">{leaves.length} awaiting action</div>
+        </div>
+
+        <div className="mt-6 overflow-hidden rounded-3xl border border-white/10">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-white/10 text-left">
+              <thead className="bg-white/[0.03] text-xs uppercase tracking-[0.22em] text-slate-400">
+                <tr>
+                  <th className="px-5 py-4">Employee</th>
+                  <th className="px-5 py-4">Type</th>
+                  <th className="px-5 py-4">Dates</th>
+                  <th className="px-5 py-4">Days</th>
+                  <th className="px-5 py-4">Status</th>
+                  <th className="px-5 py-4">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </main>
-    </div>
+              </thead>
+              <tbody className="divide-y divide-white/8 bg-slate-950/40 text-sm text-slate-200">
+                {leaves.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-5 py-14 text-center text-slate-400">No pending leave requests right now.</td>
+                  </tr>
+                ) : (
+                  leaves.map((leave) => (
+                    <tr key={leave._id} className="hover:bg-white/[0.03]">
+                      <td className="px-5 py-4 font-medium text-white">{leave.employeeName}</td>
+                      <td className="px-5 py-4">{leave.leaveType}</td>
+                      <td className="px-5 py-4">{new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}</td>
+                      <td className="px-5 py-4">{leave.days}</td>
+                      <td className="px-5 py-4"><span className="rounded-full border border-amber-400/20 bg-amber-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-amber-200">{leave.status}</span></td>
+                      <td className="px-5 py-4">
+                        <div className="flex flex-wrap gap-2">
+                          <button onClick={() => updateLeaveStatus(leave._id, "Approved")} className="rounded-xl bg-emerald-500/12 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200 hover:bg-emerald-500/22">Approve</button>
+                          <button onClick={() => updateLeaveStatus(leave._id, "Rejected")} className="rounded-xl bg-rose-500/12 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-rose-200 hover:bg-rose-500/22">Reject</button>
+                          <button onClick={() => updateLeaveStatus(leave._id, "Cancelled")} className="rounded-xl bg-white/8 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-200 hover:bg-white/12">Cancel</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </SurfaceCard>
+    </OfficeShell>
   );
 }

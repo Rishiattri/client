@@ -71,15 +71,27 @@ export default function SignupPage() {
     .sh-lbl{display:block;margin-bottom:7px;font-size:11px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#71717a}
     .sh-link{color:#a78bfa;font-weight:500;text-decoration:none;transition:color .15s}
     .sh-link:hover{color:#c4b5fd}
+    @media (max-width: 1024px){
+      html,body{overflow:auto}
+      .sh-auth-shell{position:static !important;min-height:100vh !important;flex-direction:column !important;overflow:auto !important}
+      .sh-auth-left{flex:none !important;width:100% !important;padding:32px 24px !important;gap:28px !important}
+      .sh-auth-right{flex:none !important;width:100% !important;border-left:none !important;border-top:1px solid rgba(255,255,255,.06) !important}
+      .sh-auth-card{max-width:100% !important;padding:32px 24px 40px !important}
+    }
+    @media (max-width: 640px){
+      .sh-auth-left{padding:28px 20px !important}
+      .sh-auth-card{padding:24px 20px 32px !important}
+      .sh-signup-grid{grid-template-columns:1fr !important}
+    }
   `;
 
   return (
     <>
       <style>{css}</style>
-      <div style={{ position:"fixed", inset:0, display:"flex", background:"#09090b", color:"#fff", overflow:"hidden", fontFamily:"'Segoe UI',system-ui,-apple-system,sans-serif" }}>
+      <div className="sh-auth-shell" style={{ position:"fixed", inset:0, display:"flex", background:"#09090b", color:"#fff", overflow:"hidden", fontFamily:"'Segoe UI',system-ui,-apple-system,sans-serif" }}>
 
         {/* LEFT */}
-        <div style={{ flex:"0 0 42%", display:"flex", flexDirection:"column", justifyContent:"space-between", padding:"40px 48px", position:"relative", overflow:"hidden", background:"linear-gradient(145deg,#0a0a10 0%,#0e0818 60%,#120a1e 100%)" }}>
+        <div className="sh-auth-left" style={{ flex:"0 0 42%", display:"flex", flexDirection:"column", justifyContent:"space-between", padding:"40px 48px", position:"relative", overflow:"hidden", background:"linear-gradient(145deg,#0a0a10 0%,#0e0818 60%,#120a1e 100%)" }}>
           <div style={{ position:"absolute", inset:0, pointerEvents:"none", background:"radial-gradient(ellipse 60% 55% at 10% 90%,rgba(124,58,237,.25) 0%,transparent 60%),radial-gradient(ellipse 40% 35% at 90% 5%,rgba(192,60,210,.12) 0%,transparent 55%)" }} />
           <div className="sh-dot-grid" style={{ position:"absolute", inset:0, opacity:.4, pointerEvents:"none" }} />
 
@@ -117,11 +129,11 @@ export default function SignupPage() {
         </div>
 
         {/* RIGHT */}
-        <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", background:"#0f0f12", borderLeft:"1px solid rgba(255,255,255,.06)", position:"relative", }}>
+        <div className="sh-auth-right" style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", background:"#0f0f12", borderLeft:"1px solid rgba(255,255,255,.06)", position:"relative", }}>
           <div style={{ position:"absolute", bottom:-96, right:-96, width:320, height:320, borderRadius:"50%", background:"rgba(124,58,237,.07)", filter:"blur(80px)", pointerEvents:"none" }} />
           <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:"linear-gradient(90deg,transparent,#7c3aed,transparent)" }} />
 
-          <div style={{ width:"100%", maxWidth:480, padding:"36px 48px", position:"relative", zIndex:1 }}>
+          <div className="sh-auth-card" style={{ width:"100%", maxWidth:480, padding:"36px 48px", position:"relative", zIndex:1 }}>
 
             <div style={{ marginBottom:22 }}>
               <h2 style={{ fontSize:25, fontWeight:700, color:"#fafafa", letterSpacing:"-.02em", marginBottom:5 }}>Create your account</h2>
@@ -138,7 +150,7 @@ export default function SignupPage() {
             <form onSubmit={handleSignup} style={{ display:"flex", flexDirection:"column", gap:15 }}>
 
               {/* Name + Email */}
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+              <div className="sh-signup-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
                 <div>
                   <label className="sh-lbl">Full name</label>
                   <input className="sh-input" style={{ padding:"12px 14px" }} type="text" placeholder="Jane Smith" value={fullName} onChange={(e) => setFullName(e.target.value)} autoComplete="name" required />

@@ -1,19 +1,9 @@
-"use client";
+﻿"use client";
 
 import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
-const sidebarItems = [
-  { label: "Dashboard", href: "/dashboard" },
-  { label: "Add Employee", href: "/dashboard/add-employee" },
-  { label: "Add Project", href: "/dashboard/add-project" },
-  { label: "Leaves", href: "/leaves" },
-  { label: "Apply Leave", href: "/leaves/apply" },
-  { label: "Manage Leaves", href: "/leaves/manage" },
-  { label: "Salaries", href: "#" },
-  { label: "Employee Login", href: "/login" },
-  { label: "Employee Logout", href: "/login" }
-];
+import { OfficeShell, SurfaceCard } from "@/src/components/office/OfficeShell";
 
 export default function ApplyLeavePage() {
   const router = useRouter();
@@ -31,13 +21,7 @@ export default function ApplyLeavePage() {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        employeeName,
-        leaveType,
-        startDate,
-        endDate,
-        reason
-      })
+      body: JSON.stringify({ employeeName, leaveType, startDate, endDate, reason })
     });
 
     const data = await res.json();
@@ -49,70 +33,56 @@ export default function ApplyLeavePage() {
   };
 
   return (
-    <div style={{ display: "flex", color: "white", background: "#151a1f", minHeight: "100vh" }}>
-      <aside
-        style={{
-          width: 260,
-          background: "#0f172a",
-          borderRight: "1px solid #1e293b",
-          padding: 24,
-          position: "sticky",
-          top: 0,
-          height: "100vh"
-        }}
-      >
-        <h2 style={{ margin: 0, marginBottom: 24, fontSize: 24 }}>StaffHub</h2>
-        <nav style={{ display: "grid", gap: 10 }}>
-          {sidebarItems.map((item, index) => (
-            <a
-              key={item.label}
-              href={item.href}
-              style={{
-                padding: "12px 14px",
-                borderRadius: 10,
-                background: index === 4 ? "#1e293b" : "transparent",
-                color: "#e2e8f0",
-                border: "1px solid #1e293b",
-                textDecoration: "none"
-              }}
-            >
-              {item.label}
-            </a>
-          ))}
-        </nav>
-      </aside>
+    <OfficeShell
+      title="Apply Leave"
+      subtitle="A separate request flow keeps the dashboard clean while still feeling native to StaffHub. The form follows the same restrained, professional visual system as auth."
+    >
+      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <SurfaceCard>
+          <form onSubmit={applyLeave} className="grid gap-5 md:grid-cols-2">
+            <label className="block text-sm text-slate-300">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Employee Name</span>
+              <input value={employeeName} onChange={(event) => setEmployeeName(event.target.value)} required className="h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none placeholder:text-slate-500 focus:border-violet-400/40 focus:bg-white/[0.07]" placeholder="Rishi Attri" />
+            </label>
+            <label className="block text-sm text-slate-300">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Leave Type</span>
+              <select value={leaveType} onChange={(event) => setLeaveType(event.target.value as "Casual" | "Sick" | "Earned" | "Unpaid")} className="h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none focus:border-violet-400/40 focus:bg-white/[0.07]">
+                <option className="bg-slate-950" value="Casual">Casual Leave</option>
+                <option className="bg-slate-950" value="Sick">Sick Leave</option>
+                <option className="bg-slate-950" value="Earned">Earned Leave</option>
+                <option className="bg-slate-950" value="Unpaid">Unpaid Leave</option>
+              </select>
+            </label>
+            <label className="block text-sm text-slate-300">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Start Date</span>
+              <input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} required className="h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none focus:border-violet-400/40 focus:bg-white/[0.07]" />
+            </label>
+            <label className="block text-sm text-slate-300">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">End Date</span>
+              <input type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} required className="h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none focus:border-violet-400/40 focus:bg-white/[0.07]" />
+            </label>
+            <label className="block text-sm text-slate-300 md:col-span-2">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Reason</span>
+              <textarea value={reason} onChange={(event) => setReason(event.target.value)} required className="min-h-[140px] w-full rounded-3xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-violet-400/40 focus:bg-white/[0.07]" placeholder="Family event, health rest, urgent work-from-home recovery..." />
+            </label>
+            <div className="md:col-span-2 flex flex-wrap gap-3 pt-2">
+              <button type="submit" className="rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(124,58,237,0.35)] hover:-translate-y-0.5">Submit Leave</button>
+              <button type="button" onClick={() => router.push("/leaves")} className="rounded-2xl border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-slate-200 hover:border-violet-400/30 hover:bg-violet-500/10">Cancel</button>
+            </div>
+          </form>
+        </SurfaceCard>
 
-      <main style={{ flex: 1, padding: 40 }}>
-        <h1>Apply Leave</h1>
-        <p style={{ color: "#94a3b8", marginTop: 8 }}>Submit a leave request for review. Approved requests will update the employee leave balance automatically.</p>
-
-        <form
-          onSubmit={applyLeave}
-          style={{
-            display: "grid",
-            gap: 16,
-            maxWidth: 760,
-            gridTemplateColumns: "1fr 1fr",
-            marginTop: 30
-          }}
-        >
-          <input type="text" placeholder="Employee Name" value={employeeName} onChange={(event) => setEmployeeName(event.target.value)} required style={{ padding: 12 }} />
-          <select value={leaveType} onChange={(event) => setLeaveType(event.target.value as "Casual" | "Sick" | "Earned" | "Unpaid")} style={{ padding: 12 }}>
-            <option value="Casual">Casual Leave</option>
-            <option value="Sick">Sick Leave</option>
-            <option value="Earned">Earned Leave</option>
-            <option value="Unpaid">Unpaid Leave</option>
-          </select>
-          <input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} required style={{ padding: 12 }} />
-          <input type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} required style={{ padding: 12 }} />
-          <textarea placeholder="Reason" value={reason} onChange={(event) => setReason(event.target.value)} required style={{ padding: 12, minHeight: 120, gridColumn: "1 / -1" }} />
-
-          <div style={{ display: "flex", gap: 12, gridColumn: "1 / -1" }}>
-            <button type="submit">Submit Leave</button>
-            <button type="button" onClick={() => router.push("/leaves")}>Cancel</button>
+        <SurfaceCard className="space-y-5">
+          <div className="rounded-[24px] border border-white/10 bg-gradient-to-br from-violet-600/12 to-fuchsia-500/8 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-violet-300/80">Request guidance</p>
+            <h2 className="mt-3 text-2xl font-bold text-white">Simple, explicit leave input</h2>
+            <p className="mt-3 text-sm leading-7 text-slate-300">Once submitted, the request lands in the leave management screens where it can be approved, rejected, or cancelled. Approved requests automatically reduce available balance.</p>
           </div>
-        </form>
-      </main>
-    </div>
+          <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-5 text-sm leading-7 text-slate-400">
+            Keep the employee name consistent with the employee directory so balances stay grouped under a single record. This first version uses the name as the balance key.
+          </div>
+        </SurfaceCard>
+      </div>
+    </OfficeShell>
   );
 }
