@@ -4,17 +4,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
+import { getStoredAuth } from "@/src/services/api/client";
 import { logout } from "@/src/store/auth/authSlice";
 import { store } from "@/src/store";
-
-const navItems = [
-  { label: "Dashboard", href: "/dashboard", icon: "dashboard" },
-  { label: "Add Employee", href: "/dashboard/add-employee", icon: "employee" },
-  { label: "Add Project", href: "/dashboard/add-project", icon: "project" },
-  { label: "Leaves", href: "/leaves", icon: "leave" },
-  { label: "Salaries", href: "/salaries", icon: "salary" },
-  { label: "Profile", href: "/profile", icon: "employee" }
-];
 
 const logoutItem = { label: "Logout", href: "/login", icon: "logout" };
 
@@ -58,6 +50,13 @@ function Icon({ type }: { type: string }) {
           <rect x="2.5" y="5" width="19" height="14" rx="3" />
           <path d="M2.5 10h19" />
           <circle cx="12" cy="14" r="2.5" />
+        </svg>
+      );
+    case "attendance":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={common}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
         </svg>
       );
     case "logout":
@@ -107,6 +106,16 @@ export function OfficeShell({
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const auth = getStoredAuth();
+  const isAdmin = auth?.user?.role === "admin";
+  const navItems = [
+    { label: "Dashboard", href: "/dashboard", icon: "dashboard" },
+    ...(isAdmin ? [{ label: "Employees", href: "/employees", icon: "employee" }] : []),
+    { label: "Projects", href: "/projects", icon: "project" },
+    { label: "Leaves", href: "/leaves", icon: "leave" },
+    { label: "Salaries", href: "/salaries", icon: "salary" },
+    { label: "Attendance", href: "/attendance", icon: "attendance" }
+  ];
 
   const handleLogout = () => {
     if (typeof window !== "undefined") {
@@ -153,11 +162,11 @@ export function OfficeShell({
           ? "border-rose-400/15 bg-rose-500/10 text-rose-100 hover:bg-rose-500/20"
           : "border-rose-400/15 bg-rose-500/10 text-rose-100 hover:bg-rose-500/20"
       }`}
-      >
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-500/10 text-rose-200">
-          <Icon type={logoutItem.icon} />
-        </span>
-        <span>{logoutItem.label}</span>
+    >
+      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-500/10 text-rose-200">
+        <Icon type={logoutItem.icon} />
+      </span>
+      <span>{logoutItem.label}</span>
     </button>
   );
 

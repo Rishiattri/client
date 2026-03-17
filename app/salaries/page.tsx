@@ -1,5 +1,6 @@
-﻿"use client";
+"use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { OfficeShell, SurfaceCard } from "@/src/components/office/OfficeShell";
@@ -8,6 +9,7 @@ import { api, getStoredAuth } from "@/src/services/api/client";
 type SalarySlip = {
   _id: string;
   employeeId?: string;
+  employeeEmail?: string;
   employeeName: string;
   month: string;
   baseSalary: number;
@@ -50,6 +52,13 @@ export default function SalariesPage() {
     <OfficeShell
       title="Salaries"
       subtitle={isAdmin ? "Admins can review all salary slips, bonus adjustments, deductions, and payroll totals across the team." : "Employees only see their own salary slips and monthly breakdowns here."}
+      actions={
+        isAdmin ? (
+          <Link href="/salaries/add" className="rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(124,58,237,0.35)] hover:-translate-y-0.5">
+            Add Salary
+          </Link>
+        ) : undefined
+      }
     >
       <div className="grid gap-5 lg:grid-cols-3">
         {payrollStats.map((item) => (

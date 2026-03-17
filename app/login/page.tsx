@@ -296,6 +296,23 @@ export default function LoginPage() {
               <p style={{ fontSize: 14, color: "#52525b", fontWeight: 300 }}>
                 Sign in to your workspace
               </p>
+              <div style={{
+                marginTop: 16,
+                borderRadius: 14,
+                border: "1px solid rgba(124,58,237,0.20)",
+                background: "rgba(124,58,237,0.08)",
+                padding: "12px 14px"
+              }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#c4b5fd" }}>
+                  Demo Admin Access
+                </p>
+                <p style={{ marginTop: 6, fontSize: 13, color: "#ddd6fe" }}>
+                  Email: <strong style={{ color: "#ffffff" }}>Nirontech@yopmail.com</strong>
+                </p>
+                <p style={{ marginTop: 4, fontSize: 13, color: "#ddd6fe" }}>
+                  Password: <strong style={{ color: "#ffffff" }}>admin</strong>
+                </p>
+              </div>
             </div>
 
             {/* Error */}

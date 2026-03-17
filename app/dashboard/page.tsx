@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { OfficeShell, SurfaceCard } from "@/src/components/office/OfficeShell";
+import { api, getStoredAuth } from "@/src/services/api/client";
 
 interface Employee {
   _id: string;
@@ -28,9 +29,23 @@ interface Project {
   techStack: string;
 }
 
+interface Leave {
+  _id: string;
+  status: "Pending" | "Approved" | "Rejected" | "Cancelled";
+}
+
+interface SalarySlip {
+  _id: string;
+  netSalary: number;
+}
+
 export default function Dashboard() {
+  const auth = getStoredAuth();
+  const isAdmin = auth?.user?.role === "admin";
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [leaves, setLeaves] = useState<Leave[]>([]);
+  const [salaryRows, setSalaryRows] = useState<SalarySlip[]>([]);
   const [totalEmployees, setTotalEmployees] = useState(0);
 
   const refreshEmployees = async () => {
@@ -62,13 +77,37 @@ export default function Dashboard() {
     }
   };
 
+  const refreshLeaves = async () => {
+    try {
+      const res = await fetch("http://localhost:3001/api/leaves");
+      const data = await res.json();
+      setLeaves(Array.isArray(data.items) ? data.items : []);
+    } catch {
+      setLeaves([]);
+    }
+  };
+
+  const refreshSalaryRows = useCallback(async () => {
+    if (!auth?.token) {
+      setSalaryRows([]);
+      return;
+    }
+
+    try {
+      const response = await api<{ items: SalarySlip[] }>(isAdmin ? "/salary" : "/salary/me");
+      setSalaryRows(Array.isArray(response.items) ? response.items : []);
+    } catch {
+      setSalaryRows([]);
+    }
+  }, [auth?.token, isAdmin]);
+
   useEffect(() => {
     const loadDashboardData = async () => {
-      await Promise.all([refreshEmployees(), refreshProjects()]);
+      await Promise.all([refreshEmployees(), refreshProjects(), refreshLeaves(), refreshSalaryRows()]);
     };
 
     void loadDashboardData();
-  }, []);
+  }, [isAdmin, refreshSalaryRows]);
 
   const deleteEmployee = async (id: string) => {
     const res = await fetch(`http://localhost:3001/api/employees/${id}`, {
@@ -98,11 +137,18 @@ export default function Dashboard() {
 
   const activeProjectCount = projects.filter((project) => project.status === "Active").length;
   const completedProjectCount = projects.filter((project) => project.status === "Completed").length;
+  const pendingLeavesCount = leaves.filter((leave) => leave.status === "Pending").length;
+  const salaryOverview = isAdmin
+    ? `$${salaryRows.reduce((sum, row) => sum + row.netSalary, 0).toLocaleString()}`
+    : salaryRows[0]
+      ? `$${salaryRows[0].netSalary.toLocaleString()}`
+      : "$0";
 
   const stats = [
     { label: "Total Employees", value: totalEmployees, hint: "Live employee directory", color: "from-violet-600/30 to-fuchsia-500/20" },
-    { label: "Active Projects", value: activeProjectCount, hint: "Current workstreams", color: "from-sky-600/30 to-cyan-500/20" },
-    { label: "Completed Projects", value: completedProjectCount, hint: "Delivered workstreams", color: "from-emerald-600/30 to-teal-500/20" }
+    { label: "Completed Projects", value: completedProjectCount, hint: `${activeProjectCount} active right now`, color: "from-emerald-600/30 to-teal-500/20" },
+    { label: "Pending Leaves", value: pendingLeavesCount, hint: "Requests waiting for review", color: "from-amber-600/30 to-orange-500/20" },
+    { label: "Salary Overview", value: salaryOverview, hint: isAdmin ? "Net processed this cycle" : "Latest visible salary", color: "from-sky-600/30 to-cyan-500/20" }
   ];
 
   return (
@@ -116,7 +162,7 @@ export default function Dashboard() {
         </>
       }
     >
-      <div className="grid gap-5 xl:grid-cols-3">
+      <div className="grid gap-5 xl:grid-cols-4">
         {stats.map((stat) => (
           <SurfaceCard key={stat.label} className={`relative overflow-hidden bg-gradient-to-br ${stat.color}`}>
             <div className="absolute right-0 top-0 h-28 w-28 rounded-full bg-white/8 blur-2xl" />
