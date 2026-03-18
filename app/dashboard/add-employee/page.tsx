@@ -16,6 +16,7 @@ export default function AddEmployeePage() {
   const [address, setAddress] = useState("");
   const [experienceLevel, setExperienceLevel] = useState<"Fresher" | "Experienced">("Fresher");
   const [joiningDate, setJoiningDate] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [profileImage, setProfileImage] = useState("");
   const [profileImageName, setProfileImageName] = useState("");
 
@@ -53,6 +54,7 @@ export default function AddEmployeePage() {
         address,
         experienceLevel,
         joiningDate,
+        birthDate,
         profileImage
       })
     });
@@ -104,6 +106,10 @@ export default function AddEmployeePage() {
               <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Joining Date</span>
               <input type="date" value={joiningDate} onChange={(event) => setJoiningDate(event.target.value)} required className="h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none focus:border-violet-400/40 focus:bg-white/[0.07]" />
             </label>
+            <label className="block text-sm text-slate-300 md:col-span-2 xl:col-span-1">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Birth Date</span>
+              <input type="date" value={birthDate} onChange={(event) => setBirthDate(event.target.value)} className="h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none focus:border-violet-400/40 focus:bg-white/[0.07]" />
+            </label>
             <label className="block text-sm text-slate-300 md:col-span-2">
               <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Address</span>
               <textarea value={address} onChange={(event) => setAddress(event.target.value)} required className="min-h-[120px] w-full rounded-3xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none placeholder:text-slate-500 focus:border-violet-400/40 focus:bg-white/[0.07]" placeholder="Office address or employee location" />
@@ -140,7 +146,7 @@ export default function AddEmployeePage() {
 
             <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-5 text-sm text-slate-300">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-violet-300/80">StaffHub note</p>
-              <p className="mt-4 leading-7 text-slate-400">The dashboard stays clean and data-focused. New people are added here, then they appear immediately in the employee directory back on the main dashboard screen.</p>
+              <p className="mt-4 leading-7 text-slate-400">The dashboard stays clean and data-focused. Add a birth date if you want this employee included in the daily birthday email automation.</p>
             </div>
           </div>
         </div>

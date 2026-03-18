@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { OfficeShell, SurfaceCard } from "@/src/components/office/OfficeShell";
 import { api, getStoredAuth } from "@/src/services/api/client";
@@ -43,7 +43,7 @@ function formatHours(minutes: number) {
 }
 
 export default function AttendancePage() {
-  const auth = getStoredAuth();
+  const auth = useMemo(() => getStoredAuth(), []);
   const isAdmin = auth?.user?.role === "admin";
   const [rows, setRows] = useState<AttendanceRow[]>([]);
   const [summary, setSummary] = useState<AttendanceSummary>(emptySummary);
@@ -70,7 +70,7 @@ export default function AttendancePage() {
     }
 
     void loadAttendance();
-  }, [auth]);
+  }, [auth?.token]);
 
   const handleAttendanceAction = async (path: "/attendance/check-in" | "/attendance/check-out", action: "check-in" | "check-out") => {
     try {
@@ -82,6 +82,18 @@ export default function AttendancePage() {
       alert(error instanceof Error ? error.message : "Attendance action failed");
     } finally {
       setBusyAction(null);
+    }
+  };
+
+  const deleteAttendance = async (id: string) => {
+    try {
+      const response = await api<{ message: string }>(`/attendance/${id}`, {
+        method: "DELETE"
+      });
+      alert(response.message);
+      await loadAttendance();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Attendance delete failed");
     }
   };
 
@@ -149,12 +161,13 @@ export default function AttendancePage() {
                   <th className="px-5 py-4">Check-out</th>
                   <th className="px-5 py-4">Hours</th>
                   <th className="px-5 py-4">Status</th>
+                  {isAdmin ? <th className="px-5 py-4 text-right">Action</th> : null}
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/8 bg-slate-950/40 text-sm text-slate-200">
                 {rows.length === 0 ? (
                   <tr>
-                    <td colSpan={isAdmin ? 6 : 5} className="px-5 py-14 text-center text-slate-400">No attendance records available yet.</td>
+                    <td colSpan={isAdmin ? 7 : 5} className="px-5 py-14 text-center text-slate-400">No attendance records available yet.</td>
                   </tr>
                 ) : (
                   rows.map((row) => (
@@ -182,6 +195,17 @@ export default function AttendancePage() {
                           {row.status}
                         </span>
                       </td>
+                      {isAdmin ? (
+                        <td className="px-5 py-4 text-right">
+                          <button
+                            type="button"
+                            onClick={() => void deleteAttendance(row._id)}
+                            className="rounded-xl border border-rose-400/20 bg-rose-500/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-rose-200 hover:bg-rose-500/20"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      ) : null}
                     </tr>
                   ))
                 )}

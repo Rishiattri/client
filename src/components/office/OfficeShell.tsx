@@ -59,6 +59,13 @@ function Icon({ type }: { type: string }) {
           <path d="M12 7v5l3 2" />
         </svg>
       );
+    case "celebration":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={common}>
+          <path d="M12 21s-6-3.6-6-9a3 3 0 0 1 5.1-2.1L12 11l.9-1.1A3 3 0 0 1 18 12c0 5.4-6 9-6 9Z" />
+          <path d="M8 4h.01M16 5h.01M6 8h.01" />
+        </svg>
+      );
     case "logout":
       return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={common}>
@@ -114,7 +121,8 @@ export function OfficeShell({
     { label: "Projects", href: "/projects", icon: "project" },
     { label: "Leaves", href: "/leaves", icon: "leave" },
     { label: "Salaries", href: "/salaries", icon: "salary" },
-    { label: "Attendance", href: "/attendance", icon: "attendance" }
+    { label: "Attendance", href: "/attendance", icon: "attendance" },
+    { label: "Holidays & Birthdays", href: "/celebrations", icon: "celebration" }
   ];
 
   const handleLogout = () => {

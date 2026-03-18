@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { OfficeShell, SurfaceCard } from "@/src/components/office/OfficeShell";
 import { api, getStoredAuth } from "@/src/services/api/client";
@@ -17,6 +17,7 @@ interface Employee {
   address: string;
   experienceLevel: "Fresher" | "Experienced";
   joiningDate: string;
+  birthDate?: string | null;
   profileImage?: string;
 }
 
@@ -40,7 +41,7 @@ interface SalarySlip {
 }
 
 export default function Dashboard() {
-  const auth = getStoredAuth();
+  const auth = useMemo(() => getStoredAuth(), []);
   const isAdmin = auth?.user?.role === "admin";
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);

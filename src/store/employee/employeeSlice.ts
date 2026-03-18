@@ -1,8 +1,10 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+
+type EmployeeRecord = Record<string, unknown>;
 
 interface EmployeeState {
   loading: boolean;
-  employees: any[];
+  employees: EmployeeRecord[];
   error: string | null;
 }
 
@@ -25,7 +27,7 @@ const employeeSlice = createSlice({
       state.loading = false;
     },
 
-    addEmployeeFailure: (state, action) => {
+    addEmployeeFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
       state.error = action.payload;
     },
@@ -34,12 +36,12 @@ const employeeSlice = createSlice({
       state.loading = true;
     },
 
-    getEmployeesSuccess: (state, action) => {
+    getEmployeesSuccess: (state, action: PayloadAction<EmployeeRecord[]>) => {
       state.loading = false;
       state.employees = action.payload;
     },
 
-    getEmployeesFailure: (state, action) => {
+    getEmployeesFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
       state.error = action.payload;
     }
