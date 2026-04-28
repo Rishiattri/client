@@ -8,7 +8,7 @@ import { useDispatch } from "react-redux";
 import { getStoredAuth } from "@/src/services/api/client";
 import { logout } from "@/src/store/auth/authSlice";
 
-const logoutItem = { label: "Logout", href: "/login", icon: "logout" };
+const logoutItem = { label: "Logout", href: "/login", icon:  "logout" };
 
 function Icon({ type }: { type: string }) {
   const common = "h-4 w-4";
