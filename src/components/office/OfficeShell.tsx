@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";  
+import { useDispatch } from "react-redux";
 
 import { getStoredAuth } from "@/src/services/api/client";
 import { logout } from "@/src/store/auth/authSlice";
-import { store } from "@/src/store";
 
 const logoutItem = { label: "Logout", href: "/login", icon: "logout" };
 
@@ -112,6 +112,7 @@ export function OfficeShell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const dispatch = useDispatch();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const auth = getStoredAuth();
   const isAdmin = auth?.user?.role === "admin";
@@ -130,7 +131,7 @@ export function OfficeShell({
       localStorage.removeItem("staffhub_auth");
     }
 
-    store.dispatch(logout());
+    dispatch(logout());
     setMobileMenuOpen(false);
     router.push("/login");
   };
